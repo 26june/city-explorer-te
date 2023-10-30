@@ -1,0 +1,15 @@
+.App {
+  height: 100vh;
+  width: 100vw;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.App img {
+  height: 25vw;
+  width: 25vw;
+}
