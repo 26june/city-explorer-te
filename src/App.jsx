@@ -1,6 +1,9 @@
 import "./App.css";
 import axios from "axios";
 import { useState } from "react";
+import InfoPage from "./components/InfoPage";
+import ErrorPage from "./components/ErrorPage";
+import DefaultComponent from "./components/DefaultComponent";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 
@@ -8,6 +11,8 @@ function App() {
   const [location, setLocation] = useState({});
   const [search, setSearch] = useState("");
   const [mapSrc, setMapSrc] = useState("");
+  const [hasError, setHasError] = useState(false);
+  const [errorComponent, setErrorComponent] = useState(null);
 
   function handleChange(event) {
     setSearch(event.target.value);
@@ -21,28 +26,40 @@ function App() {
     try {
       const res = await axios.get(API);
 
+      setHasError(false);
       setLocation(res.data[0]);
-
       setMapSrc(
         `https://maps.locationiq.com/v3/staticmap?key=${API_KEY}&center=${res.data[0].lat},${res.data[0].lon}&size=300>x<300&markers=icon:tiny-red-cutout|${res.data[0].lat},${res.data[0].lon}`
       );
     } catch ({ response }) {
-      setMapSrc(`https://http.cat/${response.status}`);
+      setHasError(true);
+      setErrorComponent(() => <ErrorPage errorDetails={response}></ErrorPage>);
     }
   }
 
   return (
     <div className="App">
-      <h1>City Explorer</h1>
-      <form onSubmit={getLocation}>
-        <input onChange={handleChange} placeholder="Location" value={search} />
-        <button>Get Location</button>
-      </form>
+      <div className="Header">
+        <h1>City Explorer</h1>
+        <form onSubmit={getLocation}>
+          <input
+            onChange={handleChange}
+            placeholder="Location"
+            value={search}
+          />
+          <button>Get Location</button>
+        </form>
+      </div>
 
-      <h2>{`Location: ${location.display_name}`}</h2>
-      <p>{`Latitude: ${location.lat}`}</p>
-      <p>{`Longitude: ${location.lon}`}</p>
-      <img src={mapSrc}></img>
+      <div className="Main">
+        {hasError ? (
+          errorComponent
+        ) : Object.keys(location).length === 0 ? (
+          <DefaultComponent></DefaultComponent>
+        ) : (
+          <InfoPage infoLocation={location} mapSrc={mapSrc}></InfoPage>
+        )}
+      </div>
     </div>
   );
 }
