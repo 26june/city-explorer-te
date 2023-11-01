@@ -13,6 +13,7 @@ function App() {
   const [mapSrc, setMapSrc] = useState("");
   const [hasError, setHasError] = useState(false);
   const [errorComponent, setErrorComponent] = useState(null);
+  const [weather, setWeather] = useState([]);
 
   function handleChange(event) {
     setSearch(event.target.value);
@@ -31,6 +32,20 @@ function App() {
       setMapSrc(
         `https://maps.locationiq.com/v3/staticmap?key=${API_KEY}&center=${res.data[0].lat},${res.data[0].lon}&size=300>x<300&markers=icon:tiny-red-cutout|${res.data[0].lat},${res.data[0].lon}`
       );
+
+      getWeather(res.data[0].lat, res.data[0].lon);
+    } catch ({ response }) {
+      setHasError(true);
+      setErrorComponent(() => <ErrorPage errorDetails={response}></ErrorPage>);
+    }
+  }
+
+  async function getWeather(weatherLat, weatherLon) {
+    const API = `http://localhost:8080/weather?lat=${weatherLat}&lon=${weatherLon}`;
+
+    try {
+      const res = await axios.get(API);
+      setWeather(res.data.data);
     } catch ({ response }) {
       setHasError(true);
       setErrorComponent(() => <ErrorPage errorDetails={response}></ErrorPage>);
@@ -57,7 +72,11 @@ function App() {
         ) : Object.keys(location).length === 0 ? (
           <DefaultComponent></DefaultComponent>
         ) : (
-          <InfoPage infoLocation={location} mapSrc={mapSrc}></InfoPage>
+          <InfoPage
+            infoLocation={location}
+            mapSrc={mapSrc}
+            weather={weather}
+          ></InfoPage>
         )}
       </div>
     </div>
